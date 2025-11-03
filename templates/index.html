@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>OMDB - Search</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+<h1>Online Movie Database</h1>
+<nav>
+<a href="/">Home</a> |
+<a href="/login">Login</a> |
+<a href="/signup">Signup</a> |
+<a href="/admin">Admin</a>
+</nav>
+</header>
+
+
+<main>
+<section>
+<input id="searchBox" placeholder="Search movies by title" />
+<button onclick="searchMovies()">Search</button>
+</section>
+<hr>
+<section>
+  <h2>Add a New Movie</h2>
+  <input id="title" placeholder="Movie Title" />
+  <input id="year" placeholder="Year" />
+  <input id="imdb_id" placeholder="IMDb ID (optional)" />
+  <button onclick="addMovie()">Add Movie</button>
+</section>
+
+
+<section id="results"></section>
+</main>
+
+
+<script>
+async function searchMovies() {
+  const q = document.getElementById('searchBox').value.trim();
+  if (!q) return alert('Enter a search term');
+
+  const res = await fetch(`/api/movies/search?q=${encodeURIComponent(q)}`);
+  const data = await res.json();
+  const results = document.getElementById('results');
+  results.innerHTML = '';
+
+  if (data.error) {
+    results.innerHTML = `<p>${data.error}</p>`;
+    return;
+  }
+
+  data.items.forEach(m => {
+    const div = document.createElement('div');
+    div.classList.add('movie-card');
+    div.innerHTML = `
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid #ccc; padding-bottom: 1rem;">
+        <img src="${m.poster !== 'N/A' ? m.poster : '/static/no-image.png'}" width="100">
+        <div>
+          <h3>${m.title} (${m.year || ''})</h3>
+          <p><strong>IMDb Rating:</strong> ${m.imdb_rating || 'N/A'}</p>
+          <p><strong>Actors:</strong> ${m.actors || 'N/A'}</p>
+          <p><strong>Plot:</strong> ${m.plot || 'No description available.'}</p>
+        </div>
+      </div>
+    `;
+    results.appendChild(div);
+  });
+}
+async function addMovie() {
+  const title = document.getElementById('title').value.trim();
+  const year = document.getElementById('year').value.trim();
+  const imdb_id = document.getElementById('imdb_id').value.trim();
+
+  if (!title) {
+    alert("Please enter a title");
+    return;
+  }
+
+  const res = await fetch('/api/movies', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, year, imdb_id })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.error || 'Failed to add movie');
+    return;
+  }
+
+  const data = await res.json();
+  alert(`Movie added successfully: ${data.title}`);
+}
+
+
+</script>
+
+
+</body>
+</html>

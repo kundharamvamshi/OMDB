@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+  <a href="/">Home</a> |
+
+  {% if session.get('username') %}
+    <span>Welcome, {{ session['username'] }}!</span> |
+    <a href="/logout">Logout</a> |
+    {% if session.get('is_admin') %}
+      <a href="/admin">Admin</a> |
+    {% endif %}
+  {% else %}
+    <a href="/login">Login</a> |
+    <a href="/signup">Signup</a> |
+  {% endif %}
+</nav>
+
+<h2>Admin Dashboard</h2>
+<h3>Users</h3>
+<ul>
+{% for u in users %}
+<li>{{ u.username }} - created {{ u.created_at }}</li>
+{% endfor %}
+</ul>
+
+
+<h3>Recent activity</h3>
+<ul>
+{% for a in activities %}
+<li>{{ a.timestamp }} - {{ a.user.username if a.user else 'anon' }}: {{ a.action }} - {{ a.details }}</li>
+{% endfor %}
+</ul>
+
+
+<p><a href="/">Back to Home</a></p>
+</body>
+</html>
